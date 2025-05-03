@@ -60,6 +60,7 @@ jobs:
 
       - name: Initialize PostgreSQL data directory
         run: |
+          sudo rm -rf /var/lib/postgresql/${{ matrix.pg_version }}/main
           sudo mkdir -p /var/lib/postgresql/${{ matrix.pg_version }}/main
           sudo chown -R postgres:postgres /var/lib/postgresql/${{ matrix.pg_version }}
           sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/initdb -D /var/lib/postgresql/${{ matrix.pg_version }}/main
