@@ -6,7 +6,7 @@
 
 - Rust
 - Cargo
-- PostgreSQL development headers (version 13, 14, 15, or 16)
+- PostgreSQL development headers (version 13, 14, 15, 16, 17)
 - [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx), version should be
   same as [`Cargo.toml`](Cargo.toml)
 
