@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pg_version: [13, 14, 15, 16]
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install pgrx
+        run: cargo install cargo-pgrx --version 0.14.1
+
+      - name: Install PostgreSQL ${{ matrix.pg_version }}
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get -y install postgresql-${{ matrix.pg_version }} postgresql-server-dev-${{ matrix.pg_version }}
+          echo "PostgreSQL ${{ matrix.pg_version }} installed"
+          sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config --version
+
+      - name: Setup environment
+        run: |
+          echo "PATH=/usr/lib/postgresql/${{ matrix.pg_version }}/bin:$PATH" >> $GITHUB_ENV
+          echo "LDFLAGS=-L/usr/lib/postgresql/${{ matrix.pg_version }}/lib" >> $GITHUB_ENV
+          echo "CPPFLAGS=-I/usr/lib/postgresql/${{ matrix.pg_version }}/include" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/lib/postgresql/${{ matrix.pg_version }}/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PG${{ matrix.pg_version }}=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
+          echo "PG_CONFIG=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
+
+      - name: Create .pgrx directory
+        run: mkdir -p $HOME/.pgrx
+
+      - name: Initialize pgrx
+        run: |
+          # Verify pg_config paths
+          which pg_config
+          pg_config --version
+          echo "PG${{ matrix.pg_version }} path: $PG${{ matrix.pg_version }}"
+
+          # Initialize pgrx with explicit pg_config path
+          cargo pgrx init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
+
+          # Check the config file that was created
+          echo "Generated pgrx config:"
+          cat $HOME/.pgrx/config.toml
+
+      - name: Build release package
+        run: cargo pgrx package --pg-config $PG_CONFIG --release
+
+      - name: Package artifacts
+        run: |
+          mkdir -p release/pg${{ matrix.pg_version }}
+          # Copy the .so file
+          cp target/release/pg${{ matrix.pg_version }}/lib/postgresql/tzf_pg.so release/pg${{ matrix.pg_version }}/
+          # Copy the .control file
+          cp target/release/pg${{ matrix.pg_version }}/share/postgresql/extension/tzf_pg.control release/pg${{ matrix.pg_version }}/
+          # Copy the .sql files
+          cp target/release/pg${{ matrix.pg_version }}/share/postgresql/extension/*.sql release/pg${{ matrix.pg_version }}/
+          # Create a tarball
+          cd release
+          tar -czf tzf_pg-pg${{ matrix.pg_version }}.tar.gz pg${{ matrix.pg_version }}
+          cd ..
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: tzf_pg-pg${{ matrix.pg_version }}
+          path: release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*.tar.gz
+          generate_release_notes: true
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
