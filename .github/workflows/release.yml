@@ -64,17 +64,10 @@ jobs:
 
       - name: Package artifacts
         run: |
-          mkdir -p release/pg${{ matrix.pg_version }}
-          # Copy the .so file
-          cp target/release/pg${{ matrix.pg_version }}/lib/postgresql/tzf_pg.so release/pg${{ matrix.pg_version }}/
-          # Copy the .control file
-          cp target/release/pg${{ matrix.pg_version }}/share/postgresql/extension/tzf_pg.control release/pg${{ matrix.pg_version }}/
-          # Copy the .sql files
-          cp target/release/pg${{ matrix.pg_version }}/share/postgresql/extension/*.sql release/pg${{ matrix.pg_version }}/
-          # Create a tarball
-          cd release
-          tar -czf tzf_pg-pg${{ matrix.pg_version }}.tar.gz pg${{ matrix.pg_version }}
-          cd ..
+          mkdir -p release
+          cd target/release
+          tar -czf ../../release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz pg${{ matrix.pg_version }}
+          cd ../..
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
