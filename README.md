@@ -43,6 +43,14 @@ cargo pgrx init
 Please see [releases](https://github.com/ringsaturn/tzf-pg/releases) for the
 pre-built packages.
 
+The artifact is a tarball containing the following files:
+
+```
+tzf.so
+tzf.control
+tzf--0.1.0.sql
+```
+
 ## Usage
 
 The extension provides functions to find timezone names for given coordinates:
