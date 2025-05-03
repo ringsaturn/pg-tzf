@@ -91,13 +91,14 @@ jobs:
           sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib
 
       - name: Run tests
-        run: sudo cargo pgrx test pg${{ matrix.pg_version }}
+        run: cargo pgrx test pg${{ matrix.pg_version }}
+        # sudo -E env "PATH=$PATH"
 
       - name: Run pgbench
         run: |
           createdb -U postgres pgbench_test
           psql -U postgres -d pgbench_test -c "CREATE EXTENSION tzf_pg;"
           echo "Testing tzf_tzname function:"
-          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname.sql
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname.sql 2>&1 | grep -E "tps|latency|number of"
           echo "Testing tzf_tzname_point function:"
-          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_point.sql
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_point.sql 2>&1 | grep -E "tps|latency|number of"
