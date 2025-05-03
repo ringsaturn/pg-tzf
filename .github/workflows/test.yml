@@ -95,7 +95,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: |
           createdb -U postgres pgbench_test
-          psql -U postgres -d pgbench_test -c "CREATE EXTENSION tzf_pg;"
+          psql -U postgres -d pgbench_test -c "CREATE EXTENSION tzf;"
           echo "Testing tzf_tzname function:"
           pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname.sql 2>&1 | grep -E "tps|latency|number of"
           echo "Testing tzf_tzname_point function:"
