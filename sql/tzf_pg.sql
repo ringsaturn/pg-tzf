@@ -7,23 +7,25 @@ The ordering of items is not stable, it is driven by a dependency graph.
 /* </end connected objects> */
 
 /* <begin connected objects> */
--- src/lib.rs:11
--- tzf_pg::hello_tzf_pg
-CREATE  FUNCTION "hello_tzf_pg"() RETURNS TEXT /* &str */
-STRICT
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'hello_tzf_pg_wrapper';
-/* </end connected objects> */
-
-/* <begin connected objects> */
--- src/lib.rs:21
+-- src/lib.rs:12
 -- tzf_pg::tzf_tzname
 CREATE  FUNCTION "tzf_tzname"(
 	"lon" double precision, /* f64 */
 	"lat" double precision /* f64 */
 ) RETURNS TEXT /* alloc::string::String */
-STRICT
+IMMUTABLE STRICT PARALLEL SAFE
 LANGUAGE c /* Rust */
 AS 'MODULE_PATHNAME', 'tzf_tzname_wrapper';
+/* </end connected objects> */
+
+/* <begin connected objects> */
+-- src/lib.rs:17
+-- tzf_pg::tzf_tzname_point
+CREATE  FUNCTION "tzf_tzname_point"(
+	"point" point /* pgrx_pg_sys::include::pg15::Point */
+) RETURNS TEXT /* alloc::string::String */
+IMMUTABLE STRICT PARALLEL SAFE
+LANGUAGE c /* Rust */
+AS 'MODULE_PATHNAME', 'tzf_tzname_point_wrapper';
 /* </end connected objects> */
 
