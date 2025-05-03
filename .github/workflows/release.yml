@@ -60,7 +60,7 @@ jobs:
           cat $HOME/.pgrx/config.toml
 
       - name: Build release package
-        run: cargo pgrx package --pg-config $PG_CONFIG --release
+        run: cargo pgrx package --pg-config $PG_CONFIG
 
       - name: Package artifacts
         run: |
