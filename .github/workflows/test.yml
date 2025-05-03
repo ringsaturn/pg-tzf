@@ -50,6 +50,14 @@ jobs:
           echo "PG${{ matrix.pg_version }}=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
           echo "PG_CONFIG=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
 
+      - name: Set proper directory permissions
+        run: |
+          sudo mkdir -p /usr/share/postgresql/${{ matrix.pg_version }}/extension
+          sudo chown -R $USER:$USER /usr/share/postgresql/${{ matrix.pg_version }}/extension
+          sudo mkdir -p /usr/lib/postgresql/${{ matrix.pg_version }}/lib/postgresql
+          sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib/postgresql
+          sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib
+
       - name: Create .pgrx directory
         run: mkdir -p $HOME/.pgrx
 
