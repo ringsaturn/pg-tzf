@@ -65,9 +65,8 @@ jobs:
       - name: Package artifacts
         run: |
           mkdir -p release
-          cd target/release
-          tar -czf ../../release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz pg${{ matrix.pg_version }}
-          cd ../..
+          # 直接打包编译生成的目录
+          tar -czf release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz -C target/release pg${{ matrix.pg_version }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -2050,7 +2050,7 @@ dependencies = [
 
 [[package]]
 name = "tzf_pg"
-version = "0.1.0-alpha.4"
+version = "0.1.0-alpha.5"
 dependencies = [
  "lazy_static",
  "pgrx",
