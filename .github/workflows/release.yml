@@ -66,7 +66,7 @@ jobs:
         run: |
           mkdir -p release
           # 直接打包编译生成的目录
-          tar -czf release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz -C target/release pg${{ matrix.pg_version }}
+          tar -czf release/tzf_pg-pg${{ matrix.pg_version }}.tar.gz -C target/release tzf_pg-pg${{ matrix.pg_version }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
