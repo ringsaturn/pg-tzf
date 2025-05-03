@@ -1,0 +1,7 @@
+# tzf-rs' PG extension.
+
+## LICENSE
+
+- This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- The timezone data is licensed under the ODbL. See the [LICENSE_DATA](LICENSE_DATA) file for details.
+  - Data source: https://github.com/evansiroky/timezone-boundary-builder
