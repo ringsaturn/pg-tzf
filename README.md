@@ -79,7 +79,7 @@ latency average = 0.575 ms
 tps = 17376.419570 (without initial connection time)
 ```
 
-The result is 17k TPS, and could achieve higher throughput in a production
+The result is 17K TPS, and could achieve higher throughput in a production
 environment.
 
 ## LICENSE
