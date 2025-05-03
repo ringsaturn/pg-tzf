@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         pg_version: [13, 14, 15, 16]
+      fail-fast: false
     services:
       postgres:
         image: postgres:${{ matrix.pg_version }}
@@ -47,13 +48,24 @@ jobs:
           sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo apt-get update
-          sudo apt-get -y install postgresql-${{ matrix.pg_version }}
+          sudo apt-get -y install postgresql-${{ matrix.pg_version }} postgresql-server-dev-${{ matrix.pg_version }}
 
       - name: Initialize pgrx
-        run: cargo pgrx init --pg${{ matrix.pg_version }}=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config
+        run: |
+          sudo service postgresql start
+          cargo pgrx init --pg${{ matrix.pg_version }}=$(which pg_config)
 
       - name: Build
         run: cargo pgrx package
 
       - name: Run tests
         run: cargo pgrx test pg${{ matrix.pg_version }}
+
+      - name: Run pgbench
+        run: |
+          createdb -U postgres pgbench_test
+          psql -U postgres -d pgbench_test -c "CREATE EXTENSION tzf_pg;"
+          echo "Testing tzf_tzname function:"
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname.sql
+          echo "Testing tzf_tzname_point function:"
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_point.sql
