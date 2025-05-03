@@ -1,5 +1,5 @@
 [package]
-name = "tzf_pg"
+name = "tzf"
 version = "0.1.0-alpha.8"
 edition = "2024"
 
@@ -27,7 +27,7 @@ tzf-rs = "1.0.0"
 pgrx-tests = "0.14.1"
 
 [[bin]]
-name = "pgrx_embed_tzf_pg"
+name = "pgrx_embed_tzf"
 path = "./src/bin/pgrx_embed.rs"
 
 [profile.dev]

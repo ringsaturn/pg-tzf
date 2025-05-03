@@ -14,4 +14,4 @@ run:
 	cargo pgrx run
 
 schema:
-	cargo pgrx schema > sql/tzf_pg.sql
+	cargo pgrx schema > sql/tzf.sql

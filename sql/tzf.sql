@@ -8,7 +8,7 @@ The ordering of items is not stable, it is driven by a dependency graph.
 
 /* <begin connected objects> */
 -- src/lib.rs:12
--- tzf_pg::tzf_tzname
+-- tzf::tzf_tzname
 CREATE  FUNCTION "tzf_tzname"(
 	"lon" double precision, /* f64 */
 	"lat" double precision /* f64 */
@@ -20,7 +20,7 @@ AS 'MODULE_PATHNAME', 'tzf_tzname_wrapper';
 
 /* <begin connected objects> */
 -- src/lib.rs:17
--- tzf_pg::tzf_tzname_point
+-- tzf::tzf_tzname_point
 CREATE  FUNCTION "tzf_tzname_point"(
 	"point" point /* pgrx_pg_sys::include::pg15::Point */
 ) RETURNS TEXT /* alloc::string::String */

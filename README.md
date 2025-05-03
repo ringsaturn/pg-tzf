@@ -35,7 +35,7 @@ cargo pgrx init
    ```
 3. Use in PostgreSQL:
    ```sql
-   CREATE EXTENSION tzf_pg;
+   CREATE EXTENSION tzf;
    ```
 
 ## Installation from pre-built package
@@ -48,12 +48,32 @@ pre-built packages.
 The extension provides functions to find timezone names for given coordinates:
 
 ```sql
--- Find timezone for a point (latitude, longitude)
-SELECT tzf_tzname(latitude, longitude);
+-- Find timezone for a point (longitude, latitude)
+SELECT tzf_tzname(longitude, latitude);
 
 -- Find timezone using point syntax
 SELECT tzf_tzname_point(point(longitude, latitude));
 ```
+
+Example:
+
+   ```bash
+   cargo pgrx run
+   ```
+
+   ```sql
+   tzf=# CREATE EXTENSION tzf;
+   CREATE EXTENSION
+   tzf=# SELECT tzf_tzname(116.3883, 39.9289);
+   tzf_tzname   
+   ---------------
+   Asia/Shanghai
+   (1 row)
+
+   tzf=# 
+   ```
+
+
 
 ## Performance
 
