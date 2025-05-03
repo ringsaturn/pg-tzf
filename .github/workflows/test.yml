@@ -58,6 +58,15 @@ jobs:
           sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib/postgresql
           sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib
 
+      - name: Initialize PostgreSQL data directory
+        run: |
+          sudo mkdir -p /var/lib/postgresql/${{ matrix.pg_version }}/main
+          sudo chown -R postgres:postgres /var/lib/postgresql/${{ matrix.pg_version }}
+          sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/initdb -D /var/lib/postgresql/${{ matrix.pg_version }}/main
+
+      - name: Start PostgreSQL
+        run: sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_ctl -D /var/lib/postgresql/${{ matrix.pg_version }}/main start
+
       - name: Create .pgrx directory
         run: mkdir -p $HOME/.pgrx
 
@@ -78,6 +87,9 @@ jobs:
       - name: Run tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: cargo pgrx test pg${{ matrix.pg_version }}
+
+      - name: Run install
+        run: cargo pgrx install --pg-config $PG_CONFIG
 
       - name: Run pgbench
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
