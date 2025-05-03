@@ -17,20 +17,6 @@ jobs:
       matrix:
         pg_version: [13, 14, 15, 16]
       fail-fast: false
-    services:
-      postgres:
-        image: postgres:${{ matrix.pg_version }}
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -49,14 +35,60 @@ jobs:
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo apt-get update
           sudo apt-get -y install postgresql-${{ matrix.pg_version }} postgresql-server-dev-${{ matrix.pg_version }}
+          echo "PostgreSQL ${{ matrix.pg_version }} installed"
+          sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config --version
+          echo "Created PostgreSQL ${{ matrix.pg_version }} bin directory:"
+          ls -la /usr/lib/postgresql/${{ matrix.pg_version }}/bin/
+
+      - name: Setup environment
+        run: |
+          echo "PATH=/usr/lib/postgresql/${{ matrix.pg_version }}/bin:$PATH" >> $GITHUB_ENV
+          echo "LDFLAGS=-L/usr/lib/postgresql/${{ matrix.pg_version }}/lib" >> $GITHUB_ENV
+          echo "CPPFLAGS=-I/usr/lib/postgresql/${{ matrix.pg_version }}/include" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/lib/postgresql/${{ matrix.pg_version }}/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PG${{ matrix.pg_version }}=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
+          echo "PG_CONFIG=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
+
+      - name: Stop PostgreSQL service
+        run: sudo service postgresql stop || true
+
+      - name: Remove existing data directory
+        run: sudo rm -rf /var/lib/postgresql/${{ matrix.pg_version }}/main
+
+      - name: Initialize database cluster
+        run: sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/initdb -D /var/lib/postgresql/${{ matrix.pg_version }}/main
+
+      - name: Start PostgreSQL
+        run: sudo -u postgres /usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_ctl -D /var/lib/postgresql/${{ matrix.pg_version }}/main start
+        
+      - name: Create .pgrx directory
+        run: mkdir -p $HOME/.pgrx
 
       - name: Initialize pgrx
         run: |
-          sudo service postgresql start
-          cargo pgrx init --pg${{ matrix.pg_version }}=$(which pg_config)
+          # Verify pg_config paths
+          which pg_config
+          pg_config --version
+          echo "PG${{ matrix.pg_version }} path: $PG${{ matrix.pg_version }}"
+          echo "PG_CONFIG path: $PG_CONFIG"
+          
+          # Initialize pgrx with explicit pg_config path
+          cargo pgrx init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
+          
+          # Check the config file that was created
+          echo "Generated pgrx config:"
+          cat $HOME/.pgrx/config.toml
 
       - name: Build
         run: cargo pgrx package
+
+      - name: Set proper directory permissions
+        run: |
+          sudo mkdir -p /usr/share/postgresql/${{ matrix.pg_version }}/extension
+          sudo chown -R $USER:$USER /usr/share/postgresql/${{ matrix.pg_version }}/extension
+          sudo mkdir -p /usr/lib/postgresql/${{ matrix.pg_version }}/lib/postgresql
+          sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib/postgresql
+          sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib
 
       - name: Run tests
         run: cargo pgrx test pg${{ matrix.pg_version }}
