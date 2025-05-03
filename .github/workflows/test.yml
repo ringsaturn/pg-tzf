@@ -107,14 +107,9 @@ jobs:
 
       - name: Package artifacts
         run: |
-          mkdir -p release
-          # 创建临时目录用于存放要打包的文件
-          mkdir -p temp_package
-          # 复制指定类型的文件到临时目录
-          find target/release/tzf-pg${{ matrix.pg_version }} -type f \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp --parents {} temp_package/ \;
-          # 打包临时目录中的文件
-          tar -czf tzf-pg${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
-          # 清理临时目录
+          mkdir temp_package
+          find target/release/tzf-pg${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
+          tar czf tzf-pg${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
           rm -rf temp_package
 
       - name: Upload artifacts
