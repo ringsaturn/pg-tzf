@@ -2,7 +2,7 @@
 
 ## Performance
 
-Runs under CPU not very efficiently:
+Runs under highly competitive CPU environment in GitHub Actions Runner:
 
 ```console
 CREATE EXTENSION
@@ -24,8 +24,13 @@ latency average = 0.575 ms
 tps = 17376.419570 (without initial connection time)
 ```
 
+The result is 17k TPS, and could achieve higher throughput in a production
+environment.
+
 ## LICENSE
 
-- This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-- The timezone data is licensed under the ODbL. See the [LICENSE_DATA](LICENSE_DATA) file for details.
+- This project is licensed under the MIT License. See the [LICENSE](LICENSE)
+  file for details.
+- The timezone data is licensed under the ODbL. See the
+  [LICENSE_DATA](LICENSE_DATA) file for details.
   - Data source: https://github.com/evansiroky/timezone-boundary-builder
