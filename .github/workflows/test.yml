@@ -91,7 +91,7 @@ jobs:
           sudo chown -R $USER:$USER /usr/lib/postgresql/${{ matrix.pg_version }}/lib
 
       - name: Run tests
-        run: cargo pgrx test pg${{ matrix.pg_version }}
+        run: sudo cargo pgrx test pg${{ matrix.pg_version }}
 
       - name: Run pgbench
         run: |
