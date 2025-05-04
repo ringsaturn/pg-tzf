@@ -1,0 +1,1 @@
+SELECT tzf_tzname_point(point(-74.0060, 40.7128)) AS timezone;
