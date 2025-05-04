@@ -141,6 +141,10 @@ The extension provides functions to find timezone names for given coordinates:
   (3 rows)
   ```
 
+You can see my blog post
+[Group world cities by timezone](https://blog.ringsaturn.me/en/posts/2025-05-04-world-city-group-by-timezone/)
+for a more large scale usage of this extension.
+
 ## Performance
 
 Runs under highly competitive CPU environment in GitHub Actions Runner:
