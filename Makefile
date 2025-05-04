@@ -1,21 +1,24 @@
 test:
-	cargo pgrx test pg13
-	cargo pgrx test pg14
-	cargo pgrx test pg15
-	cargo pgrx test pg16
-	cargo pgrx test pg17
+	cargo pgrx test --release pg13
+	cargo pgrx test --release pg14
+	cargo pgrx test --release pg15
+	cargo pgrx test --release pg16
+	cargo pgrx test --release pg17
 
 install:
-	cargo pgrx install
+	cargo pgrx install --release
 
 clean:
 	cargo clean
 
 run:
-	cargo pgrx run
+	cargo pgrx run --release
 
 schema:
-	cargo pgrx schema > sql/tzf.sql
+	cargo pgrx schema pg15 > sql/tzf.sql
+
+package:
+	cargo pgrx package
 
 reinstall:
 	psql -d postgres -c "DROP EXTENSION IF EXISTS tzf CASCADE;"

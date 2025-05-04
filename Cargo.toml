@@ -11,7 +11,7 @@ pg_version = 15
 sql-generator = true
 
 [features]
-default = ["pg15"]
+default = []
 pg13 = ["pgrx/pg13"]
 pg14 = ["pgrx/pg14"]
 pg15 = ["pgrx/pg15"]
