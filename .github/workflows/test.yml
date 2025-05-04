@@ -87,10 +87,10 @@ jobs:
 
       - name: Run tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: cargo pgrx test pg${{ matrix.pg_version }}
+        run: cargo pgrx test --release pg${{ matrix.pg_version }}
 
       - name: Run install
-        run: cargo pgrx install --pg-config $PG_CONFIG
+        run: cargo pgrx install --release --pg-config $PG_CONFIG
 
       - name: Run pgbench
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
