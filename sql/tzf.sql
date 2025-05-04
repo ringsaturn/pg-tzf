@@ -19,6 +19,29 @@ AS 'MODULE_PATHNAME', 'tzf_tzname_wrapper';
 /* </end connected objects> */
 
 /* <begin connected objects> */
+-- src/lib.rs:24
+-- tzf::tzf_tzname_batch
+CREATE  FUNCTION "tzf_tzname_batch"(
+	"lons" double precision[], /* alloc::vec::Vec<f64> */
+	"lats" double precision[] /* alloc::vec::Vec<f64> */
+) RETURNS TEXT[] /* alloc::vec::Vec<alloc::string::String> */
+IMMUTABLE STRICT PARALLEL SAFE
+LANGUAGE c /* Rust */
+AS 'MODULE_PATHNAME', 'tzf_tzname_batch_wrapper';
+/* </end connected objects> */
+
+/* <begin connected objects> */
+-- src/lib.rs:36
+-- tzf::tzf_tzname_batch_points
+CREATE  FUNCTION "tzf_tzname_batch_points"(
+	"points" point[] /* alloc::vec::Vec<pgrx_pg_sys::include::pg15::Point> */
+) RETURNS TEXT[] /* alloc::vec::Vec<alloc::string::String> */
+IMMUTABLE STRICT PARALLEL SAFE
+LANGUAGE c /* Rust */
+AS 'MODULE_PATHNAME', 'tzf_tzname_batch_points_wrapper';
+/* </end connected objects> */
+
+/* <begin connected objects> */
 -- src/lib.rs:17
 -- tzf::tzf_tzname_point
 CREATE  FUNCTION "tzf_tzname_point"(

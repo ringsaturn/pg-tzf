@@ -101,6 +101,10 @@ jobs:
           pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname.sql 2>&1 | grep -E "tps|latency|number of"
           echo "Testing tzf_tzname_point function:"
           pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_point.sql 2>&1 | grep -E "tps|latency|number of"
+          echo "Testing tzf_tzname_batch function:"
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_batch.sql 2>&1 | grep -E "tps|latency|number of"
+          echo "Testing tzf_tzname_batch_points function:"
+          pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_batch_points.sql 2>&1 | grep -E "tps|latency|number of"
 
       - name: Build release package
         run: cargo pgrx package --pg-config $PG_CONFIG

@@ -35,6 +35,8 @@ cargo pgrx init
    ```
 3. Use in PostgreSQL:
    ```sql
+   -- If you install old version of extension, you can drop it and install the new one.
+   -- DROP EXTENSION tzf CASCADE;
    CREATE EXTENSION tzf;
    ```
 
@@ -48,40 +50,96 @@ The artifact is a tarball containing the following files:
 ```
 tzf.so
 tzf.control
-tzf--0.1.0.sql
+tzf--{{ version }}.sql
 ```
 
 ## Usage
 
+A full schema is available at [`sql/tzf.sql`](sql/tzf.sql).
+
 The extension provides functions to find timezone names for given coordinates:
 
-```sql
--- Find timezone for a point (longitude, latitude)
-SELECT tzf_tzname(longitude, latitude);
+- Look up timezone for a coordinate (longitude, latitude):
 
--- Find timezone using point syntax
-SELECT tzf_tzname_point(point(longitude, latitude));
-```
+  ```sql
+  -- examples/query_a_coord.sql
+  SELECT tzf_tzname(116.3883, 39.9289) AS timezone;
+  ```
 
-Example:
+  Output:
 
-   ```bash
-   cargo pgrx run
-   ```
+  ```console
+     timezone
+  ---------------
+  Asia/Shanghai
+  (1 row)
+  ```
 
-   ```sql
-   tzf=# CREATE EXTENSION tzf;
-   CREATE EXTENSION
-   tzf=# SELECT tzf_tzname(116.3883, 39.9289);
-   tzf_tzname   
-   ---------------
-   Asia/Shanghai
-   (1 row)
+- Look up timezone for a batch of coordinates(we use `unnest` to unroll the
+  array):
 
-   tzf=# 
-   ```
+  ```sql
+  -- examples/query_a_batch_coords.sql
+  SELECT unnest(
+     tzf_tzname_batch(
+        ARRAY[-74.0060, -118.2437, 139.6917],
+        ARRAY[40.7128, 34.0522, 35.6895]
+     )
+  ) AS timezones;
+  ```
 
+  Output:
 
+  ```console
+        timezone
+  ---------------------
+  America/New_York
+  America/Los_Angeles
+  Asia/Tokyo
+  (3 rows)
+  ```
+
+- Look up timezone for a point:
+
+  ```sql
+  -- examples/query_a_point.sql
+  SELECT tzf_tzname_point(point(-74.0060, 40.7128)) AS timezone;
+  ```
+
+  Output:
+
+  ```console
+     timezone
+  ------------------
+  America/New_York
+  (1 row)
+  ```
+
+- Look up timezone for a batch of points:
+
+  ```sql
+  -- examples/query_a_batch_points.sql
+  SELECT unnest(
+     tzf_tzname_batch_points(
+        ARRAY[
+              point(-74.0060, 40.7128),
+              point(-118.2437, 34.0522),
+              point(139.6917, 35.6895)
+        ]
+     )
+  ) AS timezones;
+  ```
+
+  Output:
+
+  ```console
+        timezones
+  ---------------------
+  America/New_York
+  America/Los_Angeles
+  Asia/Tokyo
+  (3 rows)
+  ```
 
 ## Performance
 
@@ -92,23 +150,38 @@ CREATE EXTENSION
 Testing tzf_tzname function:
 number of clients: 10
 number of threads: 1
-maximum number of tries: 1
-number of transactions actually processed: 174479
-number of failed transactions: 0 (0.000%)
-latency average = 0.572 ms
-tps = 17475.038735 (without initial connection time)
+number of transactions actually processed: 177004
+latency average = 0.564 ms
+tps = 17726.775670 (without initial connection time)
 Testing tzf_tzname_point function:
 number of clients: 10
 number of threads: 1
-maximum number of tries: 1
-number of transactions actually processed: 173546
-number of failed transactions: 0 (0.000%)
-latency average = 0.575 ms
-tps = 17376.419570 (without initial connection time)
+number of transactions actually processed: 176147
+latency average = 0.567 ms
+tps = 17629.349990 (without initial connection time)
+Testing tzf_tzname_batch function:
+number of clients: 10
+number of threads: 1
+number of transactions actually processed: 569
+latency average = 193.407 ms
+tps = 51.704527 (without initial connection time)
+Testing tzf_tzname_batch_points function:
+number of clients: 10
+number of threads: 1
+number of transactions actually processed: 360
+latency average = 313.814 ms
+tps = 31.866004 (without initial connection time)
 ```
 
-The result is 17K TPS, and could achieve higher throughput in a production
-environment.
+| func                    | tps          | note                                   |
+| ----------------------- | ------------ | -------------------------------------- |
+| tzf_tzname              | 17726.775670 |                                        |
+| tzf_tzname_point        | 17629.349990 |                                        |
+| tzf_tzname_batch        | 51.704527    | batch size is 1000, means 51\*1000 TPS |
+| tzf_tzname_batch_points | 31.866004    | batch size is 1000, means 31\*1000 TPS |
+
+Please note that the result is under highly competitive CPU environment, so in
+real production environment, the result may be better.
 
 ## LICENSE
 
