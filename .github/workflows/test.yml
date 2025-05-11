@@ -112,15 +112,15 @@ jobs:
       - name: Package artifacts
         run: |
           mkdir temp_package
-          find target/release/tzf-pg${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
-          tar czf tzf-pg${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
+          find target/release/pg-tzf${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
+          tar czf pg-tzf${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
           rm -rf temp_package
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tzf-pg${{ matrix.pg_version }}-linux
-          path: tzf-pg${{ matrix.pg_version }}-linux.tar.gz
+          name: pg-tzf${{ matrix.pg_version }}-linux
+          path: pg-tzf${{ matrix.pg_version }}-linux.tar.gz
 
   publish:
     needs: test

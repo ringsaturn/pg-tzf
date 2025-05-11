@@ -26,8 +26,8 @@ cargo pgrx init
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ringsaturn/tzf-pg.git
-   cd tzf-pg
+   git clone https://github.com/ringsaturn/pg-tzf.git
+   cd pg-tzf
    ```
 2. Build and install the extension:
    ```bash
@@ -42,7 +42,7 @@ cargo pgrx init
 
 ## Installation from pre-built package
 
-Please see [releases](https://github.com/ringsaturn/tzf-pg/releases) for the
+Please see [releases](https://github.com/ringsaturn/pg-tzf/releases) for the
 pre-built packages.
 
 The artifact is a tarball containing the following files:
