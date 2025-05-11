@@ -112,7 +112,7 @@ jobs:
       - name: Package artifacts
         run: |
           mkdir temp_package
-          find target/release/pg-tzf${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
+          find target/release/tzf-pg${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
           tar czf pg-tzf${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
           rm -rf temp_package
 
