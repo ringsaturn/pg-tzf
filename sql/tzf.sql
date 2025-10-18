@@ -34,7 +34,7 @@ AS 'MODULE_PATHNAME', 'tzf_tzname_batch_wrapper';
 -- src/lib.rs:36
 -- tzf::tzf_tzname_batch_points
 CREATE  FUNCTION "tzf_tzname_batch_points"(
-	"points" point[] /* alloc::vec::Vec<pgrx_pg_sys::include::pg15::Point> */
+	"points" point[] /* alloc::vec::Vec<pgrx_pg_sys::include::pg16::Point> */
 ) RETURNS TEXT[] /* alloc::vec::Vec<alloc::string::String> */
 IMMUTABLE STRICT PARALLEL SAFE
 LANGUAGE c /* Rust */
@@ -45,7 +45,7 @@ AS 'MODULE_PATHNAME', 'tzf_tzname_batch_points_wrapper';
 -- src/lib.rs:17
 -- tzf::tzf_tzname_point
 CREATE  FUNCTION "tzf_tzname_point"(
-	"point" point /* pgrx_pg_sys::include::pg15::Point */
+	"point" point /* pgrx_pg_sys::include::pg16::Point */
 ) RETURNS TEXT /* alloc::string::String */
 IMMUTABLE STRICT PARALLEL SAFE
 LANGUAGE c /* Rust */

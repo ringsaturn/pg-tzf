@@ -4,6 +4,7 @@ test:
 	cargo pgrx test --release pg15
 	cargo pgrx test --release pg16
 	cargo pgrx test --release pg17
+	cargo pgrx test --release pg18
 
 install:
 	cargo pgrx install --release
@@ -15,7 +16,7 @@ run:
 	cargo pgrx run --release
 
 schema:
-	cargo pgrx schema pg15 > sql/tzf.sql
+	cargo pgrx schema pg16 > sql/tzf.sql
 
 package:
 	cargo pgrx package
