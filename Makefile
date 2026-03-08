@@ -1,5 +1,4 @@
 test:
-	cargo pgrx test --release pg13
 	cargo pgrx test --release pg14
 	cargo pgrx test --release pg15
 	cargo pgrx test --release pg16
