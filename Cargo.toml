@@ -1,6 +1,6 @@
 [package]
 name = "tzf"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 
 [lib]
@@ -21,8 +21,8 @@ pg_test = []
 
 [dependencies]
 lazy_static = "1.5.0"
-pgrx = "0.16.1"
-tzf-rs = "1.1.4"
+pgrx = "0.17.0"
+tzf-rs = "1.1.5"
 
 [dev-dependencies]
 pgrx-tests = "0.16.1"

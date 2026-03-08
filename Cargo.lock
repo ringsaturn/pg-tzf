@@ -120,6 +120,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "bindgen"
+version = "0.72.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
+dependencies = [
+ "annotate-snippets",
+ "bitflags",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.13.0",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustc-hash",
+ "shlex",
+ "syn",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1009,9 +1028,30 @@ dependencies = [
  "bitvec",
  "enum-map",
  "libc",
- "pgrx-macros",
- "pgrx-pg-sys",
- "pgrx-sql-entity-graph",
+ "pgrx-macros 0.16.1",
+ "pgrx-pg-sys 0.16.1",
+ "pgrx-sql-entity-graph 0.16.1",
+ "seahash",
+ "serde",
+ "serde_cbor",
+ "serde_json",
+ "thiserror 2.0.17",
+ "uuid",
+]
+
+[[package]]
+name = "pgrx"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd42eed31a68e3e6d7cec284cdaacd8ffa9b2b3ebb3f1df9ec2fd3558834c6e7"
+dependencies = [
+ "bitflags",
+ "bitvec",
+ "enum-map",
+ "libc",
+ "pgrx-macros 0.17.0",
+ "pgrx-pg-sys 0.17.0",
+ "pgrx-sql-entity-graph 0.17.0",
  "seahash",
  "serde",
  "serde_cbor",
@@ -1026,11 +1066,30 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00e35193b7e71e2f612d336cecd00db0f049f4cc609f2b1c9a34755b5ec559d7"
 dependencies = [
- "bindgen",
+ "bindgen 0.71.1",
  "cc",
  "clang-sys",
  "eyre",
- "pgrx-pg-config",
+ "pgrx-pg-config 0.16.1",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "shlex",
+ "syn",
+ "walkdir",
+]
+
+[[package]]
+name = "pgrx-bindgen"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d30fa3688ab1cb6429ca46725eb32d5d9f186806c0f0aa6419f86e418b8a81ab"
+dependencies = [
+ "bindgen 0.72.1",
+ "cc",
+ "clang-sys",
+ "eyre",
+ "pgrx-pg-config 0.17.0",
  "proc-macro2",
  "quote",
  "regex",
@@ -1045,7 +1104,19 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dab542dd4041773874f90cd8e3448195749548dc3fb1daf501e7e11ebfb1dd22"
 dependencies = [
- "pgrx-sql-entity-graph",
+ "pgrx-sql-entity-graph 0.16.1",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "pgrx-macros"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ca7cc537daa4cc004f12ad1d31756b506358aa900251a82c3280e719da88fa4"
+dependencies = [
+ "pgrx-sql-entity-graph 0.17.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -1072,6 +1143,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pgrx-pg-config"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1cd8670ad408093a83615fc68071929d7677b40021a475649a626319c464f0a3"
+dependencies = [
+ "cargo_toml",
+ "codepage",
+ "encoding_rs",
+ "eyre",
+ "owo-colors",
+ "pathsearch",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "toml",
+ "url",
+ "winapi",
+]
+
+[[package]]
 name = "pgrx-pg-sys"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1079,9 +1170,23 @@ checksum = "934f2536953ccb6722bef2cfdfb1f8d6d3cd4a4f2c508d56ec85b649c5680c2b"
 dependencies = [
  "cee-scape",
  "libc",
- "pgrx-bindgen",
- "pgrx-macros",
- "pgrx-sql-entity-graph",
+ "pgrx-bindgen 0.16.1",
+ "pgrx-macros 0.16.1",
+ "pgrx-sql-entity-graph 0.16.1",
+ "serde",
+]
+
+[[package]]
+name = "pgrx-pg-sys"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9f81faae87d533b573156261b17521c0c7f66f5ca5dab2b9e6ddbf5a63dbd14"
+dependencies = [
+ "cee-scape",
+ "libc",
+ "pgrx-bindgen 0.17.0",
+ "pgrx-macros 0.17.0",
+ "pgrx-sql-entity-graph 0.17.0",
  "serde",
 ]
 
@@ -1090,6 +1195,22 @@ name = "pgrx-sql-entity-graph"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07a767cb9faa612f1ba7f13718136d4006950d6f253b414ef487a03e85c47a94"
+dependencies = [
+ "convert_case",
+ "eyre",
+ "petgraph 0.8.3",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "thiserror 2.0.17",
+ "unescape",
+]
+
+[[package]]
+name = "pgrx-sql-entity-graph"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4800fa91a481a83d3c1aaffd1324fcd2e587df0ed342c71d6a66d0899027e505"
 dependencies = [
  "convert_case",
  "eyre",
@@ -1112,9 +1233,9 @@ dependencies = [
  "libc",
  "owo-colors",
  "paste",
- "pgrx",
- "pgrx-macros",
- "pgrx-pg-config",
+ "pgrx 0.16.1",
+ "pgrx-macros 0.16.1",
+ "pgrx-pg-config 0.16.1",
  "postgres",
  "proptest",
  "rand",
@@ -1846,25 +1967,25 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "tzf"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "lazy_static",
- "pgrx",
+ "pgrx 0.17.0",
  "pgrx-tests",
  "tzf-rs",
 ]
 
 [[package]]
 name = "tzf-rel"
-version = "0.0.2025-c"
+version = "0.0.2026-a"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43ecf4f6cd5b2e02a0a7765f05c3a68c0897549c952a906d693b30df316879d8"
+checksum = "437e15d8465333d008c53bcca87dc0d1be7e32030ae6eca25f180f2b90e1882e"
 
 [[package]]
 name = "tzf-rs"
-version = "1.1.4"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1a26f626d94ee507ce69a3ee5d4009e96f3847d028b98705c610b0fcbadb462"
+checksum = "e9c1ae0a53b8f74d4560b26753a44ec3804fb97633b7f594e78b7c59cda2a6a3"
 dependencies = [
  "anyhow",
  "bytes",
