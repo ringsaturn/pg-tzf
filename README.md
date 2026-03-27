@@ -2,24 +2,31 @@
 
 ## Installation from source
 
+`pg-tzf` multi-version support means one source tree builds multiple version-specific artifacts.
+Each PostgreSQL major version needs its own compiled extension package.
+
 ### Prerequisites
 
 - Rust
 - Cargo
-- PostgreSQL development headers (version 14, 14, 15, 16, 17, 18)
+- PostgreSQL development headers (version 14, 15, 16, 17, 18)
 - [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx), version should be
   same as [`Cargo.toml`](Cargo.toml)
 
 ### Installing cargo-pgrx
 
 ```bash
-# Please see [Cargo.toml](Cargo.toml) for the version of cargo-pgrx.
-cargo install cargo-pgrx --version={version}
+# Auto-check pgrx and pgrx-tests version consistency, auto-sync cargo-pgrx,
+# then run cargo pgrx.
+./scripts/pgrxw.sh --help
+
+# Or install manually with the exact version from Cargo.toml.
+cargo install --locked cargo-pgrx --version {version}
 
 # Please note that you may need to init for your real PostgreSQL version.
 # For example, if you are using PostgreSQL 15 on macOS and install it via Homebrew:
-# you may need to run `cargo pgrx init --pg15 "$(brew --prefix postgresql@15)/bin/pg_config"`.
-cargo pgrx init
+# you may need to run `./scripts/pgrxw.sh init --pg15 "$(brew --prefix postgresql@15)/bin/pg_config"`.
+./scripts/pgrxw.sh init
 ```
 
 ### Build and install
@@ -31,9 +38,39 @@ cargo pgrx init
    ```
 2. Build and install the extension:
    ```bash
-   cargo pgrx install
+   ./scripts/pgrxw.sh install
    ```
-3. Use in PostgreSQL:
+
+   Build for a specific PostgreSQL major version:
+
+   ```bash
+   ./scripts/pgrxw.sh install --release --features pg15 --no-default-features
+   ```
+
+3. Run tests for all supported PostgreSQL versions:
+
+   ```bash
+   make test-all
+   ```
+
+4. Build release tarballs for all supported PostgreSQL versions:
+
+   ```bash
+   make package-all
+   ```
+
+   Artifacts are generated under `dist/` with naming:
+
+   ```text
+   pg-tzf-v{ext_version}-pg{major}-{os}-{arch}.tar.gz
+   ```
+
+5. Retry packaging for one PostgreSQL major version:
+
+   ```bash
+   make package-pg15
+   ```
+6. Use in PostgreSQL:
    ```sql
    -- If you install old version of extension, you can drop it and install the new one.
    -- DROP EXTENSION tzf CASCADE;

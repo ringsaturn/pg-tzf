@@ -29,8 +29,19 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Detect pgrx version
+        id: pgrx_version
+        run: |
+          pgrx_version="$(sed -nE 's/^[[:space:]]*pgrx[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' Cargo.toml | head -n1)"
+          pgrx_version="${pgrx_version#=}"
+          if [ -z "$pgrx_version" ]; then
+            echo "failed to detect pgrx version from Cargo.toml" >&2
+            exit 1
+          fi
+          echo "version=$pgrx_version" >> "$GITHUB_OUTPUT"
+
       - name: Install pgrx
-        run: cargo install --locked cargo-pgrx
+        run: cargo install --locked cargo-pgrx --version "${{ steps.pgrx_version.outputs.version }}"
 
       - name: Install PostgreSQL ${{ matrix.pg_version }}
         run: |
@@ -49,6 +60,16 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/lib/postgresql/${{ matrix.pg_version }}/lib/pkgconfig" >> $GITHUB_ENV
           echo "PG${{ matrix.pg_version }}=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
           echo "PG_CONFIG=/usr/lib/postgresql/${{ matrix.pg_version }}/bin/pg_config" >> $GITHUB_ENV
+
+      - name: Detect package metadata
+        id: package_meta
+        run: |
+          ext_version="$(sed -nE 's/^version = "([^"]+)".*/\1/p' Cargo.toml | head -n1)"
+          os_name="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
+          arch_name="$(uname -m)"
+          tar_name="pg-tzf-v${ext_version}-pg${{ matrix.pg_version }}-${os_name}-${arch_name}.tar.gz"
+          echo "ext_version=$ext_version" >> "$GITHUB_OUTPUT"
+          echo "tar_name=$tar_name" >> "$GITHUB_OUTPUT"
 
       - name: Set proper directory permissions
         run: |
@@ -79,7 +100,7 @@ jobs:
           echo "PG${{ matrix.pg_version }} path: $PG${{ matrix.pg_version }}"
 
           # Initialize pgrx with explicit pg_config path
-          cargo pgrx init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
+          ./scripts/pgrxw.sh init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
 
           # Check the config file that was created
           echo "Generated pgrx config:"
@@ -87,10 +108,10 @@ jobs:
 
       - name: Run tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: cargo pgrx test --release pg${{ matrix.pg_version }}
+        run: ./scripts/pgrxw.sh test --release pg${{ matrix.pg_version }}
 
       - name: Run install
-        run: cargo pgrx install --release --pg-config $PG_CONFIG
+        run: ./scripts/pgrxw.sh install --release --pg-config $PG_CONFIG
 
       - name: Run pgbench
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
@@ -107,20 +128,27 @@ jobs:
           pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_batch_points.sql 2>&1 | grep -E "tps|latency|number of"
 
       - name: Build release package
-        run: cargo pgrx package --pg-config $PG_CONFIG
+        run: ./scripts/pgrxw.sh package --pg-config $PG_CONFIG
 
       - name: Package artifacts
         run: |
           mkdir temp_package
-          find target/release/tzf-pg${{ matrix.pg_version }} \( -name "*.so" -o -name "*.sql" -o -name "*.control" \) -exec cp {} temp_package \;
-          tar czf pg-tzf${{ matrix.pg_version }}-linux.tar.gz -C temp_package .
+          find target/release/tzf-pg${{ matrix.pg_version }} -name "tzf.so" -exec cp {} temp_package \;
+          find target/release/tzf-pg${{ matrix.pg_version }} -name "tzf.control" -exec cp {} temp_package \;
+          find target/release/tzf-pg${{ matrix.pg_version }} -name "tzf--*.sql" -exec cp {} temp_package \;
+
+          test -f temp_package/tzf.so
+          test -f temp_package/tzf.control
+          ls temp_package/tzf--*.sql >/dev/null
+
+          tar czf "${{ steps.package_meta.outputs.tar_name }}" -C temp_package .
           rm -rf temp_package
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pg-tzf${{ matrix.pg_version }}-linux
-          path: pg-tzf${{ matrix.pg_version }}-linux.tar.gz
+          name: pg-tzf-pg${{ matrix.pg_version }}
+          path: ${{ steps.package_meta.outputs.tar_name }}
 
   publish:
     needs: test
@@ -137,6 +165,18 @@ jobs:
 
       - name: List artifacts
         run: find artifacts -type f
+
+      # This is the artifact aggregation gate for release.
+      # It verifies one tarball exists for every supported PG major version.
+      - name: Validate release artifacts
+        run: |
+          for pg in 14 15 16 17 18; do
+            count=$(find artifacts -type f -name "pg-tzf-v*-pg${pg}-*.tar.gz" | wc -l | tr -d '[:space:]')
+            if [ "$count" -lt 1 ]; then
+              echo "missing release tarball for pg${pg}" >&2
+              exit 1
+            fi
+          done
 
       - name: Create Release
         id: create_release
