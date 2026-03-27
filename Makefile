@@ -1,24 +1,26 @@
+PGRXW=./scripts/pgrxw.sh
+
 test:
-	cargo pgrx test --release pg14
-	cargo pgrx test --release pg15
-	cargo pgrx test --release pg16
-	cargo pgrx test --release pg17
-	cargo pgrx test --release pg18
+	$(PGRXW) test --release pg14
+	$(PGRXW) test --release pg15
+	$(PGRXW) test --release pg16
+	$(PGRXW) test --release pg17
+	$(PGRXW) test --release pg18
 
 install:
-	cargo pgrx install --release
+	$(PGRXW) install --release
 
 clean:
 	cargo clean
 
 run:
-	cargo pgrx run --release
+	$(PGRXW) run --release
 
 schema:
-	cargo pgrx schema pg16 > sql/tzf.sql
+	$(PGRXW) schema pg16 > sql/tzf.sql
 
 package:
-	cargo pgrx package
+	$(PGRXW) package
 
 reinstall:
 	psql -d postgres -c "DROP EXTENSION IF EXISTS tzf CASCADE;"

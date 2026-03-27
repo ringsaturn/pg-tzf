@@ -6,20 +6,24 @@
 
 - Rust
 - Cargo
-- PostgreSQL development headers (version 14, 14, 15, 16, 17, 18)
+- PostgreSQL development headers (version 14, 15, 16, 17, 18)
 - [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx), version should be
   same as [`Cargo.toml`](Cargo.toml)
 
 ### Installing cargo-pgrx
 
 ```bash
-# Please see [Cargo.toml](Cargo.toml) for the version of cargo-pgrx.
-cargo install cargo-pgrx --version={version}
+# Auto-check pgrx and pgrx-tests version consistency, auto-sync cargo-pgrx,
+# then run cargo pgrx.
+./scripts/pgrxw.sh --help
+
+# Or install manually with the exact version from Cargo.toml.
+cargo install --locked cargo-pgrx --version {version}
 
 # Please note that you may need to init for your real PostgreSQL version.
 # For example, if you are using PostgreSQL 15 on macOS and install it via Homebrew:
-# you may need to run `cargo pgrx init --pg15 "$(brew --prefix postgresql@15)/bin/pg_config"`.
-cargo pgrx init
+# you may need to run `./scripts/pgrxw.sh init --pg15 "$(brew --prefix postgresql@15)/bin/pg_config"`.
+./scripts/pgrxw.sh init
 ```
 
 ### Build and install
@@ -31,7 +35,7 @@ cargo pgrx init
    ```
 2. Build and install the extension:
    ```bash
-   cargo pgrx install
+   ./scripts/pgrxw.sh install
    ```
 3. Use in PostgreSQL:
    ```sql

@@ -29,8 +29,18 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Detect pgrx version
+        id: pgrx_version
+        run: |
+          pgrx_version="$(sed -nE 's/^[[:space:]]*pgrx[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' Cargo.toml | head -n1)"
+          if [ -z "$pgrx_version" ]; then
+            echo "failed to detect pgrx version from Cargo.toml" >&2
+            exit 1
+          fi
+          echo "version=$pgrx_version" >> "$GITHUB_OUTPUT"
+
       - name: Install pgrx
-        run: cargo install --locked cargo-pgrx
+        run: cargo install --locked cargo-pgrx --version "${{ steps.pgrx_version.outputs.version }}"
 
       - name: Install PostgreSQL ${{ matrix.pg_version }}
         run: |
@@ -79,7 +89,7 @@ jobs:
           echo "PG${{ matrix.pg_version }} path: $PG${{ matrix.pg_version }}"
 
           # Initialize pgrx with explicit pg_config path
-          cargo pgrx init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
+          ./scripts/pgrxw.sh init --pg${{ matrix.pg_version }}=$PG${{ matrix.pg_version }}
 
           # Check the config file that was created
           echo "Generated pgrx config:"
@@ -87,10 +97,10 @@ jobs:
 
       - name: Run tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: cargo pgrx test --release pg${{ matrix.pg_version }}
+        run: ./scripts/pgrxw.sh test --release pg${{ matrix.pg_version }}
 
       - name: Run install
-        run: cargo pgrx install --release --pg-config $PG_CONFIG
+        run: ./scripts/pgrxw.sh install --release --pg-config $PG_CONFIG
 
       - name: Run pgbench
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
@@ -107,7 +117,7 @@ jobs:
           pgbench -U postgres -d pgbench_test -c 10 -T 10 -f pgbench/tzf_tzname_batch_points.sql 2>&1 | grep -E "tps|latency|number of"
 
       - name: Build release package
-        run: cargo pgrx package --pg-config $PG_CONFIG
+        run: ./scripts/pgrxw.sh package --pg-config $PG_CONFIG
 
       - name: Package artifacts
         run: |
