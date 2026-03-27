@@ -7,7 +7,7 @@ if [[ ! -f Cargo.toml ]]; then
 fi
 
 # Keep cargo-pgrx exactly aligned with the pgrx crate declared in [dependencies].
-want_version="$({
+want_req="$({
   awk '
     /^\[dependencies\]$/ { in_deps = 1; next }
     /^\[/ { in_deps = 0 }
@@ -15,12 +15,14 @@ want_version="$({
   ' Cargo.toml
 } | sed -E 's/.*version[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/; s/^[^"]*"([^"]+)".*/\1/')"
 
+want_version="${want_req#=}"
+
 if [[ -z "${want_version}" ]]; then
   echo "error: failed to parse pgrx version from Cargo.toml" >&2
   exit 1
 fi
 
-tests_version="$({
+tests_req="$({
   awk '
     /^\[dev-dependencies\]$/ { in_dev_deps = 1; next }
     /^\[/ { in_dev_deps = 0 }
@@ -28,8 +30,10 @@ tests_version="$({
   ' Cargo.toml
 } | sed -E 's/.*version[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/; s/^[^"]*"([^"]+)".*/\1/')"
 
+tests_version="${tests_req#=}"
+
 if [[ -n "${tests_version}" && "${tests_version}" != "${want_version}" ]]; then
-  echo "error: pgrx-tests (${tests_version}) must match pgrx (${want_version})" >&2
+  echo "error: pgrx-tests (${tests_req}) must match pgrx (${want_req})" >&2
   exit 1
 fi
 

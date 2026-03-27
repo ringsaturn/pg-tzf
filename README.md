@@ -2,6 +2,9 @@
 
 ## Installation from source
 
+`pg-tzf` multi-version support means one source tree builds multiple version-specific artifacts.
+Each PostgreSQL major version needs its own compiled extension package.
+
 ### Prerequisites
 
 - Rust
@@ -37,7 +40,37 @@ cargo install --locked cargo-pgrx --version {version}
    ```bash
    ./scripts/pgrxw.sh install
    ```
-3. Use in PostgreSQL:
+
+   Build for a specific PostgreSQL major version:
+
+   ```bash
+   ./scripts/pgrxw.sh install --release --features pg15 --no-default-features
+   ```
+
+3. Run tests for all supported PostgreSQL versions:
+
+   ```bash
+   make test-all
+   ```
+
+4. Build release tarballs for all supported PostgreSQL versions:
+
+   ```bash
+   make package-all
+   ```
+
+   Artifacts are generated under `dist/` with naming:
+
+   ```text
+   pg-tzf-v{ext_version}-pg{major}-{os}-{arch}.tar.gz
+   ```
+
+5. Retry packaging for one PostgreSQL major version:
+
+   ```bash
+   make package-pg15
+   ```
+6. Use in PostgreSQL:
    ```sql
    -- If you install old version of extension, you can drop it and install the new one.
    -- DROP EXTENSION tzf CASCADE;
