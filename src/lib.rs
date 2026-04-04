@@ -151,7 +151,6 @@ mod tests {
         assert_eq!(result, Vec::<String>::new());
     }
 
-    #[cfg(feature = "pg_test")]
     #[pg_test]
     fn test_tzf_tzname_with_cities_json_loaded_into_pg() {
         fn sql_literal(value: &str) -> String {
