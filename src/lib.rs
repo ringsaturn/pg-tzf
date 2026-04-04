@@ -57,6 +57,8 @@ pub mod pg_test {
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
+    #[cfg(feature = "pg_test")]
+    use cities_json::CITIES;
     use pgrx::prelude::*;
 
     #[pg_test]
@@ -147,5 +149,96 @@ mod tests {
                 .unwrap()
                 .unwrap();
         assert_eq!(result, Vec::<String>::new());
+    }
+
+    #[cfg(feature = "pg_test")]
+    #[pg_test]
+    fn test_tzf_tzname_with_cities_json_loaded_into_pg() {
+        struct Case {
+            name: &'static str,
+            country: &'static str,
+            expected_tz: &'static str,
+        }
+
+        fn sql_literal(value: &str) -> String {
+            format!("'{}'", value.replace('\'', "''"))
+        }
+
+        let cases = [
+            Case {
+                name: "New York City",
+                country: "US",
+                expected_tz: "America/New_York",
+            },
+            Case {
+                name: "Los Angeles",
+                country: "US",
+                expected_tz: "America/Los_Angeles",
+            },
+            Case {
+                name: "Tokyo",
+                country: "JP",
+                expected_tz: "Asia/Tokyo",
+            },
+            Case {
+                name: "London",
+                country: "GB",
+                expected_tz: "Europe/London",
+            },
+            Case {
+                name: "Sydney",
+                country: "AU",
+                expected_tz: "Australia/Sydney",
+            },
+        ];
+
+        Spi::run(
+            "
+            CREATE TEMP TABLE IF NOT EXISTS test_cities_json (
+                name text NOT NULL,
+                country text NOT NULL,
+                lat float8 NOT NULL,
+                lon float8 NOT NULL
+            )
+        ",
+        )
+        .unwrap();
+
+        for case in &cases {
+            let city = CITIES
+                .iter()
+                .find(|city| city.name == case.name && city.country == case.country)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "city not found in cities-json: name={}, country={}",
+                        case.name, case.country
+                    )
+                });
+
+            Spi::run(&format!(
+                "INSERT INTO test_cities_json(name, country, lat, lon) VALUES ({}, {}, {}, {})",
+                sql_literal(case.name),
+                sql_literal(case.country),
+                city.lat,
+                city.lng
+            ))
+            .unwrap();
+        }
+
+        for case in &cases {
+            let timezone = Spi::get_one::<String>(&format!(
+                "SELECT tzf_tzname(lon, lat) FROM test_cities_json WHERE name = {} AND country = {}",
+                sql_literal(case.name),
+                sql_literal(case.country)
+            ))
+            .unwrap()
+            .unwrap();
+
+            assert_eq!(
+                timezone, case.expected_tz,
+                "unexpected timezone for city={}, country={}",
+                case.name, case.country
+            );
+        }
     }
 }
