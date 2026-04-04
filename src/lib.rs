@@ -57,6 +57,8 @@ pub mod pg_test {
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
+    #[cfg(feature = "pg_test")]
+    use cities_json::CITIES;
     use pgrx::prelude::*;
 
     #[pg_test]
@@ -147,5 +149,89 @@ mod tests {
                 .unwrap()
                 .unwrap();
         assert_eq!(result, Vec::<String>::new());
+    }
+
+    #[pg_test]
+    fn test_tzf_tzname_with_cities_json_loaded_into_pg() {
+        fn sql_literal(value: &str) -> String {
+            format!("'{}'", value.replace('\'', "''"))
+        }
+
+        Spi::run(
+            "
+            DROP TABLE IF EXISTS test_cities_json;
+            CREATE TEMP TABLE test_cities_json (
+                name text NOT NULL,
+                country text NOT NULL,
+                lat float8 NOT NULL,
+                lon float8 NOT NULL
+            );
+        ",
+        )
+        .unwrap();
+
+        for chunk in CITIES.chunks(1000) {
+            let mut sql =
+                String::from("INSERT INTO test_cities_json(name, country, lat, lon) VALUES ");
+            for (idx, city) in chunk.iter().enumerate() {
+                if idx > 0 {
+                    sql.push(',');
+                }
+                sql.push_str(&format!(
+                    "({}, {}, {}, {})",
+                    sql_literal(&city.name),
+                    sql_literal(&city.country),
+                    city.lat,
+                    city.lng
+                ));
+            }
+            Spi::run(&sql).unwrap();
+        }
+
+        let imported_count = Spi::get_one::<i64>("SELECT COUNT(*) FROM test_cities_json")
+            .unwrap()
+            .unwrap();
+        assert_eq!(imported_count as usize, CITIES.len());
+
+        let top5 = Spi::connect(|client| {
+            let mut rows = vec![];
+            let result = client
+                .select(
+                    "
+                    SELECT timezone, city_count
+                    FROM (
+                        SELECT
+                            tzf_tzname(lon, lat) AS timezone,
+                            COUNT(*)::bigint AS city_count
+                        FROM test_cities_json
+                        GROUP BY 1
+                    ) counts
+                    ORDER BY city_count DESC, timezone ASC
+                    LIMIT 5
+                    ",
+                    None,
+                    &[],
+                )
+                .unwrap();
+
+            for row in result {
+                let timezone = row.get_by_name::<String, _>("timezone").unwrap().unwrap();
+                let city_count = row.get_by_name::<i64, _>("city_count").unwrap().unwrap();
+                rows.push((timezone, city_count));
+            }
+            rows
+        });
+
+        assert_eq!(top5.len(), 5);
+        for pair in top5.windows(2) {
+            assert!(pair[0].1 >= pair[1].1);
+            if pair[0].1 == pair[1].1 {
+                assert!(pair[0].0 <= pair[1].0);
+            }
+        }
+
+        for (timezone, city_count) in &top5 {
+            notice!("{} {}", timezone, city_count);
+        }
     }
 }
