@@ -1,5 +1,5 @@
 PGRXW := ./scripts/pgrxw.sh
-PG_VERSIONS := 14 15 16 17 18
+PG_VERSIONS := 15 16 17 18 19
 DIST_DIR := dist
 EXT_VERSION := $(shell sed -nE 's/^version = "([^"]+)".*/\1/p' Cargo.toml | head -n1)
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')

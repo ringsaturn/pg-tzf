@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        pg_version: [14, 15, 16, 17, 18]
+        pg_version: [15, 16, 17, 18, 19]
       fail-fast: false
 
     steps:
@@ -170,7 +170,7 @@ jobs:
       # It verifies one tarball exists for every supported PG major version.
       - name: Validate release artifacts
         run: |
-          for pg in 14 15 16 17 18; do
+          for pg in 15 16 17 18 19; do
             count=$(find artifacts -type f -name "pg-tzf-v*-pg${pg}-*.tar.gz" | wc -l | tr -d '[:space:]')
             if [ "$count" -lt 1 ]; then
               echo "missing release tarball for pg${pg}" >&2
