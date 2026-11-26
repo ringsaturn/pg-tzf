@@ -9,7 +9,7 @@ Each PostgreSQL major version needs its own compiled extension package.
 
 - Rust
 - Cargo
-- PostgreSQL development headers (version 14, 15, 16, 17, 18)
+- PostgreSQL development headers (version 15, 16, 17, 18, 19)
 - [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx), version should be
   same as [`Cargo.toml`](Cargo.toml)
 
